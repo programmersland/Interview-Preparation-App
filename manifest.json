@@ -1,0 +1,15 @@
+{
+  "name": "Interview Coach",
+  "short_name": "InterviewCoach",
+  "start_url": "interview-app-final.html",
+  "display": "standalone",
+  "background_color": "#E4E4DB",
+  "theme_color": "#000087",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
