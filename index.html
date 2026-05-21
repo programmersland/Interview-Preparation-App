@@ -41,26 +41,28 @@
         .logo-img { max-width: 150px; height: auto; }
         h2 { text-align: center; color: var(--dark); margin: 0 0 15px 0; letter-spacing: 1px; }
 
-        /* NAV CONTROLS (UPDATED: Smaller & Solid) */
+        /* NAV CONTROLS */
         .nav-controls { 
             display: flex; justify-content: space-between; 
             margin-bottom: 20px; 
             border-bottom: 1px solid #eee; padding-bottom: 15px;
+            gap: 10px;
         }
         .btn-nav { 
-            background-color: var(--dark); /* Solid Dark Blue */
+            background-color: var(--dark); 
             color: white; 
-            border: none; /* No outline */
+            border: none; 
             font-weight: bold; 
-            padding: 6px 15px; /* Smaller padding */
+            padding: 6px 15px; 
             font-size: 0.9rem;
             border-radius: 6px; 
             cursor: pointer; 
             transition: all 0.2s;
-            flex: 0 0 auto; /* Prevents stretching */
-            width: auto;
+            flex: 1; /* allow spreading out evenly */
+            max-width: 150px;
         } 
         .btn-nav:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-print { background-color: #27ae60; /* Distinct green for print action */ }
 
         .question-box { background: var(--beige); padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--dark); }
         .question-text { font-size: 1.25em; font-weight: bold; color: var(--dark); margin: 0; }
@@ -90,7 +92,7 @@
         .btn-record:hover { background-color: var(--beige); }
         .btn-record.recording { background-color: var(--dark); color: white; border-color: var(--dark); animation: pulse-blue 1.5s infinite; }
         
-        /* TRANSCRIPT & ANALYSIS (UPDATED: Smaller Button) */
+        /* TRANSCRIPT & ANALYSIS */
         .transcript-container { background-color: var(--beige); border: 2px solid var(--sky); border-radius: 8px; padding: 15px; margin-top: 10px; position: relative; }
         .transcript-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85em; color: var(--dark); font-weight: bold; text-transform: uppercase; }
         .transcript-text { font-style: italic; color: #444; min-height: 40px; font-size: 1.05em; line-height: 1.5; }
@@ -99,9 +101,9 @@
             background-color: white; 
             border: 1px solid var(--sky); 
             color: var(--dark);
-            padding: 4px 10px; /* Much smaller padding */
-            font-size: 0.8rem; /* Smaller text */
-            flex: 0 0 auto; /* Stop stretching */
+            padding: 4px 10px; 
+            font-size: 0.8rem; 
+            flex: 0 0 auto; 
             width: auto;
             border-radius: 4px;
         }
@@ -150,19 +152,40 @@
         }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* --- PRINT STYLES --- */
+        #print-area { display: none; }
+        @media print {
+            body { background: none; background-color: white; padding: 0; color: black; }
+            .container, #toast, .nav-controls, .controls, .transcript-container, .pagination, .prompt-footer { 
+                display: none !important; 
+            }
+            #print-area { 
+                display: block; 
+                padding: 20px;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            #print-area h1 { color: black; text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 30px; }
+            .print-qa-block { margin-bottom: 25px; page-break-inside: avoid; }
+            .print-question { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; color: black; }
+            .print-answer { font-size: 1rem; white-space: pre-wrap; line-height: 1.5; padding: 10px; background: #f9f9f9; border-left: 4px solid #333; }
+            .print-no-answer { color: #888; font-style: italic; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="logo-container">
-        <img src="mylogo.png" alt="App Logo" class="logo-img">
+        <img src="mylogo.png" alt="App Logo" class="logo-img" onerror="this.style.display='none'">
     </div>
 
     <h2>Interview Preparation Coach</h2>
     
     <div class="nav-controls">
         <button class="btn-nav" onclick="changeQuestion(-1)">⬅ Prev</button>
+        <button class="btn-nav btn-print" onclick="printAnswers()">🖨️ Print Answers</button>
         <button class="btn-nav" onclick="changeQuestion(1)">Next ➡</button>
     </div>
 
@@ -200,6 +223,9 @@
     </div>
 
 </div>
+
+<!-- Hidden area populated specifically for printing -->
+<div id="print-area"></div>
 
 <div id="toast">✅ Answer Saved!</div>
 
@@ -300,12 +326,45 @@
 
     function copyPrompt() {
         const promptText = document.getElementById("ai-prompt-text").innerText;
+        // Fallback for older browsers
+        if (!navigator.clipboard) {
+            document.execCommand('copy');
+            showCopyToast();
+            return;
+        }
         navigator.clipboard.writeText(promptText).then(() => {
-            const x = document.getElementById("toast");
-            x.innerText = "📋 Prompt Copied!";
-            x.className = "show";
-            setTimeout(() => x.className = x.className.replace("show", ""), 3000);
+            showCopyToast();
         });
+    }
+
+    function showCopyToast() {
+        const x = document.getElementById("toast");
+        x.innerText = "📋 Prompt Copied!";
+        x.className = "show";
+        setTimeout(() => x.className = x.className.replace("show", ""), 3000);
+    }
+
+    // --- PRINT FUNCTIONALITY ---
+    function printAnswers() {
+        saveData(); // Ensure the current answer is saved first
+        const printArea = document.getElementById('print-area');
+        
+        let printHTML = `<h1>My Interview Preparation Answers</h1>`;
+        
+        data.forEach((q, index) => {
+            const savedAnswer = localStorage.getItem('interview_q_' + index);
+            printHTML += `
+                <div class="print-qa-block">
+                    <div class="print-question">${q.text}</div>
+                    <div class="print-answer">
+                        ${savedAnswer ? savedAnswer : '<span class="print-no-answer">No answer provided yet.</span>'}
+                    </div>
+                </div>
+            `;
+        });
+        
+        printArea.innerHTML = printHTML;
+        window.print(); // Triggers the browser print dialog
     }
 
     // --- SPEECH RECOGNITION ---
