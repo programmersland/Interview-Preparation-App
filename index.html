@@ -41,6 +41,33 @@
         .logo-img { max-width: 150px; height: auto; }
         h2 { text-align: center; color: var(--dark); margin: 0 0 15px 0; letter-spacing: 1px; }
 
+        /* --- CATEGORY TABS --- */
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: #f0f0f0;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: bold;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: var(--white);
+            color: var(--dark);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         /* NAV CONTROLS */
         .nav-controls { 
             display: flex; justify-content: space-between; 
@@ -157,7 +184,7 @@
         #print-area { display: none; }
         @media print {
             body { background: none; background-color: white; padding: 0; color: black; }
-            .container, #toast, .nav-controls, .controls, .transcript-container, .pagination, .prompt-footer { 
+            .container, #toast, .nav-controls, .controls, .transcript-container, .pagination, .prompt-footer, .tabs-container { 
                 display: none !important; 
             }
             #print-area { 
@@ -182,6 +209,12 @@
     </div>
 
     <h2>Interview Preparation Coach</h2>
+
+    <!-- TABS -->
+    <div class="tabs-container">
+        <button id="tab-basic" class="tab-btn active" onclick="switchCategory('basic')">Basic (20)</button>
+        <button id="tab-standard" class="tab-btn" onclick="switchCategory('standard')">Standard (19)</button>
+    </div>
     
     <div class="nav-controls">
         <button class="btn-nav" onclick="changeQuestion(-1)">⬅ Prev</button>
@@ -194,7 +227,7 @@
     </div>
 
     <label for="answer-input">📝 Plan your answer here:</label>
-    <textarea id="answer-input" placeholder=""></textarea>
+    <textarea id="answer-input" autocomplete="off" placeholder=""></textarea>
 
     <div class="controls">
         <button class="btn-save" onclick="saveData()">💾 Save</button>
@@ -236,41 +269,99 @@
       });
     }
 
-    const data = [
-        { text: "1. Tell me about yourself", hint: "Suggestion: This question is often used as an icebreaker. Provide a summary of your professional background, skills, and career highlights." },
-        { text: "2. What are your strengths?", hint: "Suggestion: Discuss your key strengths and skills that are relevant to the job you're applying for." },
-        { text: "3. What are your weaknesses?", hint: "Suggestion: Be honest about a weakness, but also explain how you're actively working to improve or manage it." },
-        { text: "4. Why do you want to work for our company?", hint: "Suggestion: Show that you've done your research on the company and explain why you're interested in their mission, values, products, or culture." },
-        { text: "5. Why should we hire you?", hint: "Suggestion: Highlight your qualifications, experience, and how they align with the job's requirements." },
-        { text: "6. Tell me about a time when you faced a challenge at work and how you handled it.", hint: "Suggestion: This is a behavioral interview question. Use the STAR method (Situation, Task, Action, Result) to structure your response." },
-        { text: "7. Where do you see yourself in 5 years?", hint: "Suggestion: Describe your career goals and how you believe this job aligns with your long-term aspirations." },
-        { text: "8. What is your most significant professional achievement?", hint: "Suggestion: Discuss a specific accomplishment that demonstrates your skills and abilities." },
-        { text: "9. How do you handle stress and pressure? ?", hint: "Suggestion: Explain your strategies for managing stress and maintaining productivity in challenging situations." },
-        { text: "10. Describe a time when you worked as part of a team.?", hint: "Suggestion: Share an example of your teamwork, emphasizing your collaboration and communication skills." },
-        { text: "11. What is your preferred work style?", hint: "Suggestion: Discuss your work habits and how they contribute to your effectiveness." },
-        { text: "12. Why did you leave your previous job?", hint: "Suggestion: Be tactful and focus on the desire for growth, new challenges, or better alignment with your career goals." },
-        { text: "13. What do you know about our industry/competitors?", hint: "Suggestion: Demonstrate your knowledge of the industry and the company's position within it." },
-        { text: "14. How do you stay updated with industry trends and developments?", hint: "Suggestion: Explain your methods for staying informed and relevant in your field." },
-        { text: "15. Do you have any questions for us?", hint: "Suggestion: Always have thoughtful questions prepared for the interviewer to demonstrate your interest and curiosity about the position and company." },
-        { text: "16. What motivates you?", hint: "Suggestion: Discuss the factors that drive you to excel in your work and personal life." },
-        { text: "17. How do you handle criticism or feedback?", hint: "Suggestion: Describe your receptiveness to feedback and how you use it to improve." },
-        { text: "18. How would you handle a situation where you disagree with your manager or team member?", hint: "Suggestion: Emphasize your ability to communicate and find common ground while respecting differences of opinion." },
-        { text: "19. Tell me about a time when you demonstrated leadership.", hint: "Suggestion: Share an example of your leadership skills and how you influenced or inspired others." },
-    ];
+    // --- QUESTION SETS (Basic and Standard) ---
+    const questionSets = {
+        basic: [
+            { text: "1. What's your full name?", hint: "Suggestion: State your full name clearly." },
+            { text: "2. Where were you born?", hint: "Suggestion: Mention the city and country you were born in." },
+            { text: "3. When did you start learning English?", hint: "Suggestion: Mention the year or how old you were when you started." },
+            { text: "4. Who is your favorite author?", hint: "Suggestion: Name the author and briefly mention why you like their work." },
+            { text: "5. What kind of music do you enjoy listening to?", hint: "Suggestion: Mention your favorite genre or artist." },
+            { text: "6. How often do you exercise?", hint: "Suggestion: Be honest, e.g., 'I exercise three times a week'." },
+            { text: "7. What is your favorite type of cuisine?", hint: "Suggestion: Mention the food type, e.g., 'I love Italian food'." },
+            { text: "8. Where did you go on your last vacation?", hint: "Suggestion: Name the place and one fun thing you did there." },
+            { text: "9. How many languages do you speak?", hint: "Suggestion: List the languages and your proficiency level in each." },
+            { text: "10. What is your educational background?", hint: "Suggestion: Mention your highest degree or current studies." },
+            { text: "11. When is your birthday?", hint: "Suggestion: State the month and day." },
+            { text: "12. What do you do in your free time?", hint: "Suggestion: Mention 1-2 hobbies that you enjoy." },
+            { text: "13. Who is your best friend, and how did you meet?", hint: "Suggestion: Give their name and a brief story of how you met." },
+            { text: "14. What is your dream job?", hint: "Suggestion: Describe the role and why you are passionate about it." },
+            { text: "15. Where do you see yourself in five years?", hint: "Suggestion: Mention your career goals or personal milestones." },
+            { text: "16. How do you usually celebrate special occasions?", hint: "Suggestion: Mention spending time with family, going out for dinner, etc." },
+            { text: "17. What is your favorite movie or TV show?", hint: "Suggestion: Name the title and briefly explain why you like it." },
+            { text: "18. Who is the most influential person in your life?", hint: "Suggestion: Name the person (e.g., a parent, teacher) and why." },
+            { text: "19. What skills would you like to develop further?", hint: "Suggestion: Mention a professional or personal skill you are working on." },
+            { text: "20. Where do you live, and what do you like about your neighborhood?", hint: "Suggestion: State your location and one positive thing about it." }
+        ],
+        standard: [
+            { text: "1. Tell me about yourself", hint: "Suggestion: This question is often used as an icebreaker. Provide a summary of your professional background, skills, and career highlights." },
+            { text: "2. What are your strengths?", hint: "Suggestion: Discuss your key strengths and skills that are relevant to the job you're applying for." },
+            { text: "3. What are your weaknesses?", hint: "Suggestion: Be honest about a weakness, but also explain how you're actively working to improve or manage it." },
+            { text: "4. Why do you want to work for our company?", hint: "Suggestion: Show that you've done your research on the company and explain why you're interested in their mission, values, products, or culture." },
+            { text: "5. Why should we hire you?", hint: "Suggestion: Highlight your qualifications, experience, and how they align with the job's requirements." },
+            { text: "6. Tell me about a time when you faced a challenge at work and how you handled it.", hint: "Suggestion: This is a behavioral interview question. Use the STAR method (Situation, Task, Action, Result) to structure your response." },
+            { text: "7. Where do you see yourself in 5 years?", hint: "Suggestion: Describe your career goals and how you believe this job aligns with your long-term aspirations." },
+            { text: "8. What is your most significant professional achievement?", hint: "Suggestion: Discuss a specific accomplishment that demonstrates your skills and abilities." },
+            { text: "9. How do you handle stress and pressure?", hint: "Suggestion: Explain your strategies for managing stress and maintaining productivity in challenging situations." },
+            { text: "10. Describe a time when you worked as part of a team.", hint: "Suggestion: Share an example of your teamwork, emphasizing your collaboration and communication skills." },
+            { text: "11. What is your preferred work style?", hint: "Suggestion: Discuss your work habits and how they contribute to your effectiveness." },
+            { text: "12. Why did you leave your previous job?", hint: "Suggestion: Be tactful and focus on the desire for growth, new challenges, or better alignment with your career goals." },
+            { text: "13. What do you know about our industry/competitors?", hint: "Suggestion: Demonstrate your knowledge of the industry and the company's position within it." },
+            { text: "14. How do you stay updated with industry trends and developments?", hint: "Suggestion: Explain your methods for staying informed and relevant in your field." },
+            { text: "15. Do you have any questions for us?", hint: "Suggestion: Always have thoughtful questions prepared for the interviewer to demonstrate your interest and curiosity about the position and company." },
+            { text: "16. What motivates you?", hint: "Suggestion: Discuss the factors that drive you to excel in your work and personal life." },
+            { text: "17. How do you handle criticism or feedback?", hint: "Suggestion: Describe your receptiveness to feedback and how you use it to improve." },
+            { text: "18. How would you handle a situation where you disagree with your manager or team member?", hint: "Suggestion: Emphasize your ability to communicate and find common ground while respecting differences of opinion." },
+            { text: "19. Tell me about a time when you demonstrated leadership.", hint: "Suggestion: Share an example of your leadership skills and how you influenced or inspired others." }
+        ]
+    };
 
+    let currentCategory = 'basic'; // Set Basic as the default landing page
     let currentIndex = 0;
+    
     const qText = document.getElementById("question-text");
     const inputArea = document.getElementById("answer-input");
     const transcriptContent = document.getElementById("transcript-content");
     const analysisBox = document.getElementById("analysis-result");
     const paginationContainer = document.getElementById("pagination");
 
+    // --- GET STORAGE KEY BASED ON CATEGORY ---
+    function getStorageKey(index) {
+        if (currentCategory === 'standard') {
+            return 'interview_q_' + index;
+        } else {
+            return 'interview_basic_q_' + index;
+        }
+    }
+
+    // --- TAB SWITCHING LOGIC ---
+    function switchCategory(category) {
+        saveData(); // Save whatever they were doing before switching
+        currentCategory = category;
+        currentIndex = 0; 
+        
+        // Update tab buttons UI
+        document.getElementById("tab-basic").classList.remove("active");
+        document.getElementById("tab-standard").classList.remove("active");
+        document.getElementById("tab-" + category).classList.add("active");
+
+        renderPagination();
+        loadQuestion(0);
+    }
+
+    // --- AUTO-SAVE ON TYPING ---
+    inputArea.addEventListener('input', function() {
+        localStorage.setItem(getStorageKey(currentIndex), inputArea.value);
+    });
+
+    // Initialize UI on load
     renderPagination();
     loadQuestion(0);
 
     function renderPagination() {
+        const currentData = questionSets[currentCategory];
         paginationContainer.innerHTML = ""; 
-        data.forEach((_, index) => {
+        currentData.forEach((_, index) => {
             const btn = document.createElement("button");
             btn.classList.add("page-btn");
             btn.innerText = index + 1;
@@ -287,23 +378,24 @@
     }
 
     function loadQuestion(index) {
-        if (index < 0) index = 0; if (index >= data.length) index = data.length - 1;
+        const currentData = questionSets[currentCategory];
+        if (index < 0) index = 0; if (index >= currentData.length) index = currentData.length - 1;
         currentIndex = index;
         
-        qText.innerText = data[currentIndex].text;
-        inputArea.placeholder = data[currentIndex].hint;
+        qText.innerText = currentData[currentIndex].text;
+        inputArea.placeholder = currentData[currentIndex].hint;
         updatePaginationActiveState(currentIndex);
 
         transcriptContent.innerText = "(Your recording will appear here...)";
         analysisBox.style.display = "none";
 
-        const savedAnswer = localStorage.getItem('interview_q_' + currentIndex);
+        const savedAnswer = localStorage.getItem(getStorageKey(currentIndex));
         inputArea.value = savedAnswer || "";
     }
 
     function saveData() {
-        localStorage.setItem('interview_q_' + currentIndex, inputArea.value);
-        showToast();
+        localStorage.setItem(getStorageKey(currentIndex), inputArea.value);
+        showToast("✅ Answer Saved!");
     }
 
     function changeQuestion(dir) { saveData(); loadQuestion(currentIndex + dir); }
@@ -317,9 +409,9 @@
         window.speechSynthesis.speak(utterance);
     }
 
-    function showToast() {
+    function showToast(message) {
         const x = document.getElementById("toast");
-        x.innerText = "✅ Answer Saved!";
+        x.innerText = message || "✅ Answer Saved!";
         x.className = "show";
         setTimeout(() => x.className = x.className.replace("show", ""), 3000);
     }
@@ -344,15 +436,17 @@
         setTimeout(() => x.className = x.className.replace("show", ""), 3000);
     }
 
-    // --- PRINT FUNCTIONALITY ---
+    // --- PRINT FUNCTIONALITY (UPDATED FOR CATEGORIES) ---
     function printAnswers() {
-        saveData(); // Ensure the current answer is saved first
+        saveData(); // Ensure current is saved
         const printArea = document.getElementById('print-area');
+        const currentData = questionSets[currentCategory];
+        const categoryTitle = currentCategory === 'standard' ? 'Standard Questions' : 'Basic Questions';
         
-        let printHTML = `<h1>My Interview Preparation Answers</h1>`;
+        let printHTML = `<h1>My Interview Preparation Answers - ${categoryTitle}</h1>`;
         
-        data.forEach((q, index) => {
-            const savedAnswer = localStorage.getItem('interview_q_' + index);
+        currentData.forEach((q, index) => {
+            const savedAnswer = localStorage.getItem(getStorageKey(index));
             printHTML += `
                 <div class="print-qa-block">
                     <div class="print-question">${q.text}</div>
@@ -364,7 +458,7 @@
         });
         
         printArea.innerHTML = printHTML;
-        window.print(); // Triggers the browser print dialog
+        window.print(); 
     }
 
     // --- SPEECH RECOGNITION ---
